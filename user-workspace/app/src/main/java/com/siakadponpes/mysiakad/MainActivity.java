@@ -21,9 +21,13 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import com.google.android.gms.ads.InterstitialAd;
+import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.FullScreenContentCallback;
+import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.interstitial.InterstitialAd;
+import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
 import com.siakadponpes.mysiakad.config.AppConfig;
 
 public class MainActivity extends AppCompatActivity {
@@ -31,7 +35,7 @@ public class MainActivity extends AppCompatActivity {
     private ProgressBar progressBar;
     private ValueCallback<Uri[]> filePathCallback;
     private final static int FILE_CHOOSER_RESULT_CODE = 1;
-    private InterstitialAd interstitialAd;
+    private InterstitialAd mInterstitialAd;
     private long backPressedTime;
     private static final int PERMISSION_REQUEST_CODE = 1;
     private String[] permissions = {
@@ -138,10 +142,40 @@ public class MainActivity extends AppCompatActivity {
 
     private void setupAdMob() {
         // Initialize InterstitialAd
-        interstitialAd = new InterstitialAd(this);
-        interstitialAd.setAdUnitId(getString(R.string.admob_interstitial_id));
         AdRequest adRequest = new AdRequest.Builder().build();
-        interstitialAd.loadAd(adRequest);
+        InterstitialAd.load(this, getString(R.string.admob_interstitial_id), adRequest,
+            new InterstitialAdLoadCallback() {
+                @Override
+                public void onAdLoaded(InterstitialAd interstitialAd) {
+                    mInterstitialAd = interstitialAd;
+                    if (mInterstitialAd != null) {
+                        mInterstitialAd.setFullScreenContentCallback(new FullScreenContentCallback() {
+                            @Override
+                            public void onAdDismissedFullScreenContent() {
+                                mInterstitialAd = null;
+                                // Load the next ad
+                                setupAdMob();
+                            }
+
+                            @Override
+                            public void onAdFailedToShowFullScreenContent(AdError adError) {
+                                mInterstitialAd = null;
+                            }
+                        });
+                    }
+                }
+
+                @Override
+                public void onAdFailedToLoad(LoadAdError loadAdError) {
+                    mInterstitialAd = null;
+                }
+            });
+    }
+
+    private void showInterstitialAd() {
+        if (mInterstitialAd != null) {
+            mInterstitialAd.show(this);
+        }
     }
 
     private void downloadFile(String url, String contentDisposition, String mimeType) {
@@ -176,6 +210,9 @@ public class MainActivity extends AppCompatActivity {
             webView.goBack();
         } else {
             if (backPressedTime + 2000 > System.currentTimeMillis()) {
+                if (AppConfig.isAdMobEnabled()) {
+                    showInterstitialAd();
+                }
                 super.onBackPressed();
             } else {
                 Toast.makeText(this, getString(R.string.press_back_again), Toast.LENGTH_SHORT).show();
