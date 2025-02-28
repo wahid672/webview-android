@@ -1,4 +1,4 @@
-package com.webview.app.services;
+package com.siakadponpes.mysiakad.services;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -10,8 +10,8 @@ import android.net.Uri;
 import android.os.Build;
 import androidx.core.app.NotificationCompat;
 import com.google.firebase.messaging.RemoteMessage;
-import com.webview.app.MainActivity;
-import com.webview.app.R;
+import com.siakadponpes.mysiakad.MainActivity;
+import com.siakadponpes.mysiakad.R;
 
 public class FirebaseMessagingService extends com.google.firebase.messaging.FirebaseMessagingService {
     private static final String CHANNEL_ID = "default_notification_channel";

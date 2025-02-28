@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace 'com.webview.app'
+    namespace 'com.siakadponpes.mysiakad'
     compileSdk 33
 
     defaultConfig {
-        applicationId "com.webview.app"
+        applicationId "com.siakadponpes.mysiakad"
         minSdk 21
         targetSdk 33
         versionCode 1

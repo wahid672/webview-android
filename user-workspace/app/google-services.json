@@ -1,36 +1,26 @@
 {
   "project_info": {
-    "project_number": "123456789000",
-    "project_id": "webview-app-xxxxx",
-    "storage_bucket": "webview-app-xxxxx.appspot.com"
+    "project_number": "53800076480",
+    "project_id": "mysiakad-68f8e",
+    "storage_bucket": "mysiakad-68f8e.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:123456789000:android:abc123def456",
+        "mobilesdk_app_id": "1:53800076480:android:c58ed7271cbc563f111925",
         "android_client_info": {
-          "package_name": "com.webview.app"
+          "package_name": "com.siakadponpes.mysiakad"
         }
       },
-      "oauth_client": [
-        {
-          "client_id": "123456789000-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
+      "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+          "current_key": "AIzaSyAwMRxgEIpXWjrQHiNfzORHjQCSsWsStBg"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "123456789000-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com",
-              "client_type": 3
-            }
-          ]
+          "other_platform_oauth_client": []
         }
       }
     }
