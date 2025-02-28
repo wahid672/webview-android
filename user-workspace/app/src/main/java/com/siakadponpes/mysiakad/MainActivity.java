@@ -24,6 +24,7 @@ import androidx.core.content.ContextCompat;
 import com.google.android.gms.ads.InterstitialAd;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.MobileAds;
+import com.siakadponpes.mysiakad.config.AppConfig;
 
 public class MainActivity extends AppCompatActivity {
     private WebView webView;
@@ -43,9 +44,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Initialize AdMob
-        MobileAds.initialize(this, initializationStatus -> {});
-        
         // Initialize Views
         webView = findViewById(R.id.webView);
         progressBar = findViewById(R.id.progressBar);
@@ -53,8 +51,11 @@ public class MainActivity extends AppCompatActivity {
         // Setup WebView
         setupWebView();
         
-        // Setup AdMob
-        setupAdMob();
+        // Setup AdMob if enabled
+        if (AppConfig.isAdMobEnabled()) {
+            MobileAds.initialize(this, initializationStatus -> {});
+            setupAdMob();
+        }
         
         // Request permissions
         requestPermissions();
@@ -70,7 +71,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void setFilePathCallback(ValueCallback<Uri[]> callback) {
-        this.filePathCallback = callback;
+        if (AppConfig.isFileUploadEnabled()) {
+            this.filePathCallback = callback;
+        }
     }
 
     public void updateProgressBar(int progress) {
@@ -87,11 +90,11 @@ public class MainActivity extends AppCompatActivity {
     private void setupWebView() {
         WebSettings webSettings = webView.getSettings();
         
-        // Enable JavaScript
-        webSettings.setJavaScriptEnabled(true);
+        // Enable JavaScript if enabled
+        webSettings.setJavaScriptEnabled(AppConfig.isJavaScriptEnabled());
         
-        // Enable WebGL
-        webSettings.setWebGLEnabled(true);
+        // Enable WebGL if JavaScript is enabled
+        webSettings.setWebGLEnabled(AppConfig.isJavaScriptEnabled());
         
         // Enable DOM Storage
         webSettings.setDomStorageEnabled(true);
@@ -99,16 +102,17 @@ public class MainActivity extends AppCompatActivity {
         // Enable Database
         webSettings.setDatabaseEnabled(true);
         
-        // Enable App Cache
-        webSettings.setAppCacheEnabled(true);
+        // Enable App Cache if offline mode is enabled
+        webSettings.setAppCacheEnabled(AppConfig.isOfflineModeEnabled());
         
         // Enable Mixed Content
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             webSettings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
         }
 
-        // Set Cache Mode
-        webSettings.setCacheMode(WebSettings.LOAD_DEFAULT);
+        // Set Cache Mode based on offline mode
+        webSettings.setCacheMode(AppConfig.isOfflineModeEnabled() ? 
+            WebSettings.LOAD_CACHE_ELSE_NETWORK : WebSettings.LOAD_DEFAULT);
         
         // Enable Cookies
         CookieManager.getInstance().setAcceptCookie(true);
@@ -119,13 +123,17 @@ public class MainActivity extends AppCompatActivity {
         // Set WebViewClient
         webView.setWebViewClient(new CustomWebViewClient(this));
         
-        // Set WebChromeClient
-        webView.setWebChromeClient(new CustomWebChromeClient(this));
+        // Set WebChromeClient if fullscreen is enabled
+        if (AppConfig.isFullscreenEnabled()) {
+            webView.setWebChromeClient(new CustomWebChromeClient(this));
+        }
         
-        // Set Download Listener
-        webView.setDownloadListener((url, userAgent, contentDisposition, mimetype, contentLength) -> {
-            downloadFile(url, contentDisposition, mimetype);
-        });
+        // Set Download Listener if downloads are enabled
+        if (AppConfig.isDownloadEnabled()) {
+            webView.setDownloadListener((url, userAgent, contentDisposition, mimetype, contentLength) -> {
+                downloadFile(url, contentDisposition, mimetype);
+            });
+        }
     }
 
     private void setupAdMob() {

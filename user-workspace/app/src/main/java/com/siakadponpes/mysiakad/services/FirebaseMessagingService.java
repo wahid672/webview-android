@@ -12,6 +12,7 @@ import androidx.core.app.NotificationCompat;
 import com.google.firebase.messaging.RemoteMessage;
 import com.siakadponpes.mysiakad.MainActivity;
 import com.siakadponpes.mysiakad.R;
+import com.siakadponpes.mysiakad.config.AppConfig;
 
 public class FirebaseMessagingService extends com.google.firebase.messaging.FirebaseMessagingService {
     private static final String CHANNEL_ID = "default_notification_channel";
@@ -21,8 +22,8 @@ public class FirebaseMessagingService extends com.google.firebase.messaging.Fire
     public void onMessageReceived(RemoteMessage remoteMessage) {
         super.onMessageReceived(remoteMessage);
 
-        // Check if message contains a notification payload
-        if (remoteMessage.getNotification() != null) {
+        // Only process notifications if they are enabled
+        if (AppConfig.isNotificationsEnabled() && remoteMessage.getNotification() != null) {
             sendNotification(
                 remoteMessage.getNotification().getTitle(),
                 remoteMessage.getNotification().getBody(),
@@ -33,8 +34,10 @@ public class FirebaseMessagingService extends com.google.firebase.messaging.Fire
 
     @Override
     public void onNewToken(String token) {
-        // Send token to your server
-        sendRegistrationToServer(token);
+        // Send token to your server only if notifications are enabled
+        if (AppConfig.isNotificationsEnabled()) {
+            sendRegistrationToServer(token);
+        }
     }
 
     private void sendNotification(String title, String messageBody, String url) {

@@ -7,6 +7,7 @@ import android.net.Uri;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import com.siakadponpes.mysiakad.config.AppConfig;
 
 public class CustomWebViewClient extends WebViewClient {
     private Context context;
@@ -19,30 +20,32 @@ public class CustomWebViewClient extends WebViewClient {
     public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
         String url = request.getUrl().toString();
         
-        // Handle external links
-        if (url.startsWith("tel:") || url.startsWith("mailto:") || 
-            url.startsWith("whatsapp:") || url.startsWith("market:")) {
-            Intent intent = new Intent(Intent.ACTION_VIEW);
-            intent.setData(Uri.parse(url));
-            context.startActivity(intent);
-            return true;
-        }
-        
-        // Handle payment gateway URLs
-        if (url.contains("paypal.com") || url.contains("stripe.com") || 
-            url.contains("razorpay.com")) {
-            view.loadUrl(url);
-            return true;
-        }
+        // Handle external links if enabled
+        if (AppConfig.isExternalLinksEnabled()) {
+            if (url.startsWith("tel:") || url.startsWith("mailto:") || 
+                url.startsWith("whatsapp:") || url.startsWith("market:")) {
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.setData(Uri.parse(url));
+                context.startActivity(intent);
+                return true;
+            }
+            
+            // Handle payment gateway URLs
+            if (url.contains("paypal.com") || url.contains("stripe.com") || 
+                url.contains("razorpay.com")) {
+                view.loadUrl(url);
+                return true;
+            }
 
-        // Handle social sharing
-        if (url.startsWith("share:")) {
-            String shareText = url.substring(6);
-            Intent shareIntent = new Intent(Intent.ACTION_SEND);
-            shareIntent.setType("text/plain");
-            shareIntent.putExtra(Intent.EXTRA_TEXT, shareText);
-            context.startActivity(Intent.createChooser(shareIntent, "Share via"));
-            return true;
+            // Handle social sharing
+            if (url.startsWith("share:")) {
+                String shareText = url.substring(6);
+                Intent shareIntent = new Intent(Intent.ACTION_SEND);
+                shareIntent.setType("text/plain");
+                shareIntent.putExtra(Intent.EXTRA_TEXT, shareText);
+                context.startActivity(Intent.createChooser(shareIntent, "Share via"));
+                return true;
+            }
         }
 
         // Load all other URLs in WebView
@@ -71,7 +74,9 @@ public class CustomWebViewClient extends WebViewClient {
     @Override
     public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
         super.onReceivedError(view, errorCode, description, failingUrl);
-        // Load offline HTML file if network error occurs
-        view.loadUrl("file:///android_asset/offline.html");
+        // Load offline HTML file if network error occurs and offline mode is enabled
+        if (AppConfig.isOfflineModeEnabled()) {
+            view.loadUrl("file:///android_asset/offline.html");
+        }
     }
 }
