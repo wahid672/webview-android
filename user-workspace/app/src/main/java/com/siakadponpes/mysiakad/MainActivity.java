@@ -96,26 +96,23 @@ public class MainActivity extends AppCompatActivity {
         // Enable JavaScript if enabled
         webSettings.setJavaScriptEnabled(AppConfig.isJavaScriptEnabled());
         
-        // Enable WebGL if JavaScript is enabled
-        webSettings.setWebGLEnabled(AppConfig.isJavaScriptEnabled());
-        
         // Enable DOM Storage
         webSettings.setDomStorageEnabled(true);
         
         // Enable Database
         webSettings.setDatabaseEnabled(true);
         
-        // Enable App Cache if offline mode is enabled
-        webSettings.setAppCacheEnabled(AppConfig.isOfflineModeEnabled());
+        // Set Cache Mode based on offline mode
+        if (AppConfig.isOfflineModeEnabled()) {
+            webSettings.setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);
+        } else {
+            webSettings.setCacheMode(WebSettings.LOAD_DEFAULT);
+        }
         
         // Enable Mixed Content
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             webSettings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
         }
-
-        // Set Cache Mode based on offline mode
-        webSettings.setCacheMode(AppConfig.isOfflineModeEnabled() ? 
-            WebSettings.LOAD_CACHE_ELSE_NETWORK : WebSettings.LOAD_DEFAULT);
         
         // Enable Cookies
         CookieManager.getInstance().setAcceptCookie(true);
