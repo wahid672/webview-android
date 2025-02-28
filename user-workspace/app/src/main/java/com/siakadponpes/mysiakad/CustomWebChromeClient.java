@@ -30,7 +30,7 @@ public class CustomWebChromeClient extends WebChromeClient {
             
             Intent intent = fileChooserParams.createIntent();
             try {
-                mActivity.startActivityForResult(intent, MainActivity.FILE_CHOOSER_RESULT_CODE);
+                mActivity.startActivityForResult(intent, Constants.FILE_CHOOSER_RESULT_CODE);
             } catch (Exception e) {
                 filePathCallback.onReceiveValue(null);
                 return false;

@@ -34,7 +34,6 @@ public class MainActivity extends AppCompatActivity {
     private WebView webView;
     private ProgressBar progressBar;
     private ValueCallback<Uri[]> filePathCallback;
-    private final static int FILE_CHOOSER_RESULT_CODE = 1;
     private InterstitialAd mInterstitialAd;
     private long backPressedTime;
     private static final int PERMISSION_REQUEST_CODE = 1;
@@ -230,7 +229,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == FILE_CHOOSER_RESULT_CODE) {
+        if (requestCode == Constants.FILE_CHOOSER_RESULT_CODE) {
             if (filePathCallback != null) {
                 Uri[] results = null;
                 if (resultCode == RESULT_OK && data != null) {
