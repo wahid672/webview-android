@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>WebView App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background-color: #2196F3;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 30px;
+            border-radius: 0 0 10px 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            margin-bottom: 10px;
+        }
+
+        .content {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .feature-list {
+            list-style: none;
+        }
+
+        .feature-list li {
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #2196F3;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 10px 0;
+            transition: background-color 0.3s;
+        }
+
+        .button:hover {
+            background-color: #1976D2;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Welcome to WebView App</h1>
+        <p>A powerful Android WebView application</p>
+    </div>
+
+    <div class="container">
+        <div class="content">
+            <h2>Features</h2>
+            <ul class="feature-list">
+                <li>✓ Push Notifications Support</li>
+                <li>✓ WebGL and HTML5 Support</li>
+                <li>✓ File Upload/Download</li>
+                <li>✓ Offline Mode</li>
+                <li>✓ Full Screen Support</li>
+                <li>✓ Payment Gateway Integration</li>
+                <li>✓ Share Functionality</li>
+                <li>✓ Responsive Design</li>
+            </ul>
+        </div>
+
+        <div class="content">
+            <h2>Test Features</h2>
+            <p>Try out some of our features:</p>
+            <p>
+                <a href="#" class="button" onclick="testShare()">Test Share</a>
+                <a href="#" class="button" onclick="testDownload()">Test Download</a>
+                <a href="#" class="button" onclick="testFullscreen()">Test Fullscreen</a>
+            </p>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>&copy; 2023 WebView App. All rights reserved.</p>
+    </div>
+
+    <script>
+        function testShare() {
+            window.location.href = "share:Check out this awesome WebView App!";
+        }
+
+        function testDownload() {
+            // This is just a sample PDF URL
+            window.location.href = "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf";
+        }
+
+        function testFullscreen() {
+            const elem = document.documentElement;
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen();
+            }
+        }
+
+        // Check if online
+        window.addEventListener('online', function() {
+            document.body.style.opacity = '1';
+        });
+
+        window.addEventListener('offline', function() {
+            document.body.style.opacity = '0.5';
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">WebView App</string>
+    <string name="loading">Loading…</string>
+    <string name="error_no_internet">No internet connection</string>
+    <string name="press_back_again">Press back again to exit</string>
+    <string name="downloading">Downloading…</string>
+    <string name="download_complete">Download complete</string>
+    <string name="share_via">Share via</string>
+    <string name="offline_message">You are currently offline</string>
+    <string name="admob_app_id">ca-app-pub-xxxxxxxxxxxxxxxx~yyyyyyyyyy</string>
+    <string name="admob_interstitial_id">ca-app-pub-xxxxxxxxxxxxxxxx/yyyyyyyyyy</string>
+    <string name="notification_channel_name">Default</string>
+    <string name="notification_channel_description">Default notification channel</string>
+    <string name="error_permission_denied">Permission denied</string>
+    <string name="error_file_upload">Error uploading file</string>
+    <string name="error_download">Error downloading file</string>
+</resources>
