@@ -54,7 +54,7 @@ public class FirebaseMessagingService extends com.google.firebase.messaging.Fire
         
         NotificationCompat.Builder notificationBuilder =
                 new NotificationCompat.Builder(this, CHANNEL_ID)
-                        .setSmallIcon(R.drawable.ic_notification)
+                        .setSmallIcon(R.mipmap.ic_launcher)
                         .setContentTitle(title)
                         .setContentText(messageBody)
                         .setAutoCancel(true)
