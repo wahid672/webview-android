@@ -1,13 +1,18 @@
 package com.siakadponpes.mysiakad;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.provider.MediaStore;
 import android.view.View;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.widget.FrameLayout;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import com.siakadponpes.mysiakad.config.AppConfig;
 
 public class CustomWebChromeClient extends WebChromeClient {
@@ -21,14 +26,28 @@ public class CustomWebChromeClient extends WebChromeClient {
         this.mActivity = activity;
     }
 
-    // For file upload
+    // For file upload and camera capture
     @Override
     public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback,
                                    FileChooserParams fileChooserParams) {
         if (AppConfig.isFileUploadEnabled() && mActivity instanceof MainActivity) {
             ((MainActivity) mActivity).setFilePathCallback(filePathCallback);
             
-            Intent intent = fileChooserParams.createIntent();
+            Intent intent;
+            if (fileChooserParams.isCaptureEnabled()) {
+                // This is a camera capture request
+                if (ContextCompat.checkSelfPermission(mActivity, Manifest.permission.CAMERA) 
+                        != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(mActivity, 
+                        new String[]{Manifest.permission.CAMERA}, 1001);
+                    filePathCallback.onReceiveValue(null);
+                    return false;
+                }
+                intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            } else {
+                intent = fileChooserParams.createIntent();
+            }
+            
             try {
                 mActivity.startActivityForResult(intent, Constants.FILE_CHOOSER_RESULT_CODE);
             } catch (Exception e) {
@@ -111,14 +130,33 @@ public class CustomWebChromeClient extends WebChromeClient {
         }
     }
 
-    // For handling HTML5 notifications
+    // For handling HTML5 permissions (camera, microphone, etc.)
     @Override
     public void onPermissionRequest(final android.webkit.PermissionRequest request) {
         mActivity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                request.grant(request.getResources());
+                String[] resources = request.getResources();
+                for (String resource : resources) {
+                    if (resource.equals(android.webkit.PermissionRequest.RESOURCE_VIDEO_CAPTURE)) {
+                        if (ContextCompat.checkSelfPermission(mActivity, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+                            request.grant(new String[]{resource});
+                        } else {
+                            ActivityCompat.requestPermissions(mActivity, new String[]{Manifest.permission.CAMERA}, 1001);
+                        }
+                    }
+                }
             }
         });
+    }
+
+    // For handling Geolocation
+    @Override
+    public void onGeolocationPermissionsShowPrompt(String origin, android.webkit.GeolocationPermissions.Callback callback) {
+        if (ContextCompat.checkSelfPermission(mActivity, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            callback.invoke(origin, true, false);
+        } else {
+            callback.invoke(origin, false, false);
+        }
     }
 }

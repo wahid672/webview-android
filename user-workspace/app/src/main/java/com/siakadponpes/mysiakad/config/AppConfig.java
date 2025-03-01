@@ -11,6 +11,9 @@ public class AppConfig {
     private static boolean ENABLE_FULLSCREEN = true;
     private static boolean ENABLE_EXTERNAL_LINKS = true;
 
+    // Base URL
+    private static String BASE_URL = "https://dev.siakadponpes.com";
+
     // Getters and setters for feature flags
     public static boolean isJavaScriptEnabled() {
         return ENABLE_JAVASCRIPT;
@@ -74,5 +77,13 @@ public class AppConfig {
 
     public static void setExternalLinksEnabled(boolean enabled) {
         ENABLE_EXTERNAL_LINKS = enabled;
+    }
+
+    public static String getBaseUrl() {
+        return BASE_URL;
+    }
+
+    public static void setBaseUrl(String url) {
+        BASE_URL = url;
     }
 }

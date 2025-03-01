@@ -5,142 +5,234 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>WebView App</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
         body {
-            font-family: 'Roboto', Arial, sans-serif;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
             background-color: #f5f5f5;
-            color: #333;
-            line-height: 1.6;
         }
-
         .container {
-            max-width: 800px;
+            max-width: 600px;
             margin: 0 auto;
-            padding: 20px;
-        }
-
-        .header {
-            background-color: #2196F3;
-            color: white;
-            padding: 20px;
-            text-align: center;
-            margin-bottom: 30px;
-            border-radius: 0 0 10px 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-
-        .header h1 {
-            margin-bottom: 10px;
-        }
-
-        .content {
             background: white;
             padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2196F3;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .input-group {
             margin-bottom: 20px;
         }
-
-        .feature-list {
-            list-style: none;
+        input[type="url"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px;
+            margin-bottom: 10px;
         }
-
-        .feature-list li {
-            padding: 10px 0;
-            border-bottom: 1px solid #eee;
-        }
-
-        .feature-list li:last-child {
-            border-bottom: none;
-        }
-
-        .button {
-            display: inline-block;
-            padding: 10px 20px;
+        button {
             background-color: #2196F3;
             color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            margin: 10px 0;
-            transition: background-color 0.3s;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
         }
-
-        .button:hover {
+        button:hover {
             background-color: #1976D2;
         }
-
-        .footer {
-            text-align: center;
+        .example-urls {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        .example-urls h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .example-urls ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .example-urls li {
+            margin-bottom: 8px;
+            color: #2196F3;
+            cursor: pointer;
+        }
+        .example-urls li:hover {
+            text-decoration: underline;
+        }
+        .geolocation-test, .camera-test {
+            margin-top: 30px;
             padding: 20px;
-            color: #666;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        .location-button {
+            background-color: #4CAF50;
+            margin-bottom: 15px;
+        }
+        .location-button:hover {
+            background-color: #45a049;
+        }
+        .camera-button {
+            background-color: #9C27B0;
+            margin-bottom: 15px;
+        }
+        .camera-button:hover {
+            background-color: #7B1FA2;
+        }
+        .location-result, .camera-result {
+            padding: 10px;
+            margin-top: 10px;
+            background: white;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            min-height: 50px;
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>Welcome to WebView App</h1>
-        <p>A powerful Android WebView application</p>
-    </div>
-
     <div class="container">
-        <div class="content">
-            <h2>Features</h2>
-            <ul class="feature-list">
-                <li>✓ Push Notifications Support</li>
-                <li>✓ WebGL and HTML5 Support</li>
-                <li>✓ File Upload/Download</li>
-                <li>✓ Offline Mode</li>
-                <li>✓ Full Screen Support</li>
-                <li>✓ Payment Gateway Integration</li>
-                <li>✓ Share Functionality</li>
-                <li>✓ Responsive Design</li>
+        <h1>WebView App</h1>
+        
+        <div class="input-group">
+            <input type="url" id="urlInput" placeholder="Enter URL (e.g., https://www.google.com)" />
+            <button onclick="loadUrl()">Load URL</button>
+        </div>
+
+        <div class="example-urls">
+            <h3>Example URLs to Test:</h3>
+            <ul>
+                <li onclick="setUrl('https://www.google.com')">Google</li>
+                <li onclick="setUrl('https://www.youtube.com')">YouTube</li>
+                <li onclick="setUrl('https://www.github.com')">GitHub</li>
+                <li onclick="setUrl('https://www.wikipedia.org')">Wikipedia</li>
             </ul>
         </div>
 
-        <div class="content">
-            <h2>Test Features</h2>
-            <p>Try out some of our features:</p>
-            <p>
-                <a href="#" class="button" onclick="testShare()">Test Share</a>
-                <a href="#" class="button" onclick="testDownload()">Test Download</a>
-                <a href="#" class="button" onclick="testFullscreen()">Test Fullscreen</a>
-            </p>
+        <div class="geolocation-test">
+            <h3>Test Geolocation:</h3>
+            <button onclick="getLocation()" class="location-button">Get Current Location</button>
+            <div id="location-result" class="location-result"></div>
+        </div>
+
+        <div class="camera-test">
+            <h3>Test Camera:</h3>
+            <button onclick="openCamera()" class="camera-button">Open Camera</button>
+            <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display: none;">
+            <div id="camera-result" class="camera-result">
+                <img id="capturedImage" style="max-width: 100%; display: none;">
+            </div>
         </div>
     </div>
 
-    <div class="footer">
-        <p>&copy; 2023 WebView App. All rights reserved.</p>
-    </div>
-
     <script>
-        function testShare() {
-            window.location.href = "share:Check out this awesome WebView App!";
-        }
-
-        function testDownload() {
-            // This is just a sample PDF URL
-            window.location.href = "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf";
-        }
-
-        function testFullscreen() {
-            const elem = document.documentElement;
-            if (elem.requestFullscreen) {
-                elem.requestFullscreen();
+        function loadUrl() {
+            var url = document.getElementById('urlInput').value;
+            if (url) {
+                if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                    url = 'https://' + url;
+                }
+                window.location.href = url;
+            } else {
+                alert('Please enter a valid URL');
             }
         }
 
-        // Check if online
-        window.addEventListener('online', function() {
-            document.body.style.opacity = '1';
+        function setUrl(url) {
+            document.getElementById('urlInput').value = url;
+        }
+
+        function getLocation() {
+            const resultDiv = document.getElementById('location-result');
+            resultDiv.innerHTML = 'Requesting location...';
+
+            if (!navigator.geolocation) {
+                resultDiv.innerHTML = 'Geolocation is not supported by your browser';
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const latitude = position.coords.latitude;
+                    const longitude = position.coords.longitude;
+                    resultDiv.innerHTML = `
+                        <strong>Location found!</strong><br>
+                        Latitude: ${latitude}<br>
+                        Longitude: ${longitude}<br>
+                        <a href="https://www.google.com/maps?q=${latitude},${longitude}" target="_blank">View on Google Maps</a>
+                    `;
+                },
+                (error) => {
+                    let errorMessage = 'Error getting location: ';
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED:
+                            errorMessage += 'Permission denied';
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            errorMessage += 'Position unavailable';
+                            break;
+                        case error.TIMEOUT:
+                            errorMessage += 'Request timed out';
+                            break;
+                        default:
+                            errorMessage += 'Unknown error occurred';
+                    }
+                    resultDiv.innerHTML = errorMessage;
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
+                }
+            );
+        }
+
+        function openCamera() {
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                // Try to open camera directly
+                navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+                    .then(function(stream) {
+                        stream.getTracks().forEach(track => track.stop());
+                        document.getElementById('cameraInput').click();
+                    })
+                    .catch(function(error) {
+                        console.error("Camera error:", error);
+                        document.getElementById('cameraInput').click();
+                    });
+            } else {
+                // Fallback to file input
+                document.getElementById('cameraInput').click();
+            }
+        }
+
+        document.getElementById('cameraInput').addEventListener('change', function(e) {
+            if (e.target.files && e.target.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.getElementById('capturedImage');
+                    img.src = e.target.result;
+                    img.style.display = 'block';
+                };
+                reader.readAsDataURL(e.target.files[0]);
+            }
         });
 
-        window.addEventListener('offline', function() {
-            document.body.style.opacity = '0.5';
+        // Handle Enter key press
+        document.getElementById('urlInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                loadUrl();
+            }
         });
     </script>
 </body>

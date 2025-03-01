@@ -8,11 +8,34 @@
     <string name="download_complete">Download complete</string>
     <string name="share_via">Share via</string>
     <string name="offline_message">You are currently offline</string>
-    <string name="admob_app_id">ca-app-pub-xxxxxxxxxxxxxxxx~yyyyyyyyyy</string>
-    <string name="admob_interstitial_id">ca-app-pub-xxxxxxxxxxxxxxxx/yyyyyyyyyy</string>
     <string name="notification_channel_name">Default</string>
     <string name="notification_channel_description">Default notification channel</string>
     <string name="error_permission_denied">Permission denied</string>
+    <string name="permission_title">Permission Required</string>
+    <string name="permission_message">This app needs the following permissions to provide full functionality:</string>
+    <string name="permission_ok">OK</string>
+    <string name="permission_cancel">Cancel</string>
+    <string name="permission_denied_message">Some features may not work without permissions</string>
+    
+    <!-- Permission Explanations -->
+    <string name="permission_camera_reason">Camera: For taking photos and video calls</string>
+    <string name="permission_microphone_reason">Microphone: For voice calls and audio recording</string>
+    <string name="permission_location_reason">Location: For maps and location-based features</string>
+    <string name="permission_storage_reason">Storage: For downloading files and saving media</string>
+    
+    <!-- Camera Related -->
+    <string name="camera_permission_denied">Camera permission is required to take photos</string>
+    <string name="camera_error">Error accessing camera</string>
+    
+    <!-- URL Scheme Error Messages -->
+    <string name="error_no_phone_app">No app found to handle phone calls</string>
+    <string name="error_no_email_app">No app found to handle emails</string>
+    <string name="error_no_sms_app">No app found to handle SMS</string>
+    <string name="error_no_whatsapp">WhatsApp is not installed</string>
+    <string name="error_no_maps_app">No app found to handle maps</string>
+    <string name="error_no_app_for_link">No app found to handle this link</string>
     <string name="error_file_upload">Error uploading file</string>
-    <string name="error_download">Error downloading file</string>
+    <string name="downloading_file">Downloading file…</string>
+    <string name="download_started">Downloading %1$s</string>
+    <string name="download_error">Error downloading file</string>
 </resources>

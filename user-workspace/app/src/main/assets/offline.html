@@ -44,19 +44,45 @@
             line-height: 1.5;
         }
         
-        .retry-button {
-            background-color: #2196F3;
-            color: white;
-            border: none;
+        .button-container {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .button {
             padding: 12px 24px;
             border-radius: 4px;
             font-size: 16px;
             cursor: pointer;
             transition: background-color 0.3s;
+            border: none;
+            color: white;
+        }
+        
+        .retry-button {
+            background-color: #2196F3;
         }
         
         .retry-button:hover {
             background-color: #1976D2;
+        }
+
+        .home-button {
+            background-color: #4CAF50;
+        }
+        
+        .home-button:hover {
+            background-color: #388E3C;
+        }
+
+        .exit-button {
+            background-color: #F44336;
+        }
+        
+        .exit-button:hover {
+            background-color: #D32F2F;
         }
     </style>
 </head>
@@ -65,7 +91,11 @@
         <div class="icon">📡</div>
         <h1>No Internet Connection</h1>
         <p>Please check your internet connection and try again.</p>
-        <button class="retry-button" onclick="window.location.reload()">Retry</button>
+        <div class="button-container">
+            <button class="button retry-button" onclick="window.location.reload()">Retry</button>
+            <button class="button home-button" onclick="goHome()">Home</button>
+            <button class="button exit-button" onclick="exitApp()">Exit</button>
+        </div>
     </div>
     
     <script>
@@ -75,6 +105,18 @@
                 window.location.reload();
             }
         }, 5000);
+
+        function goHome() {
+            // This will be handled by the WebView to load the home page
+            window.location.href = 'file:///android_asset/index.html';
+        }
+
+        function exitApp() {
+            // This will be handled by the WebView to exit the app
+            if (window.Android) {
+                window.Android.exitApp();
+            }
+        }
     </script>
 </body>
 </html>
