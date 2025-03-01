@@ -7,7 +7,7 @@ public class AppConfig {
     private static boolean ENABLE_DOWNLOAD = true;
     private static boolean ENABLE_NOTIFICATIONS = true;
     private static boolean ENABLE_OFFLINE_MODE = true;
-    private static boolean ENABLE_ADMOB = true;
+    private static boolean ENABLE_ADMOB = false;
     private static boolean ENABLE_FULLSCREEN = true;
     private static boolean ENABLE_EXTERNAL_LINKS = true;
 

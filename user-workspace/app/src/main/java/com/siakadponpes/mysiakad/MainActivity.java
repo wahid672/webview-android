@@ -188,7 +188,9 @@ public class MainActivity extends AppCompatActivity {
         DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
         request.setMimeType(mimeType);
         request.setTitle(URLUtil.guessFileName(url, contentDisposition, mimeType));
-        request.allowScanningByMediaScanner();
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            request.allowScanningByMediaScanner();
+        }
         request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
         request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS,
                 URLUtil.guessFileName(url, contentDisposition, mimeType));
@@ -225,7 +227,9 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            super.onActivityResult(requestCode, resultCode, data);
+        }
         if (requestCode == Constants.FILE_CHOOSER_RESULT_CODE) {
             if (filePathCallback != null) {
                 Uri[] results = null;

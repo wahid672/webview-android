@@ -72,6 +72,16 @@ public class CustomWebViewClient extends WebViewClient {
     }
 
     @Override
+    public void onReceivedError(WebView view, WebResourceRequest request, android.webkit.WebResourceError error) {
+        super.onReceivedError(view, request, error);
+        // Load offline HTML file if network error occurs and offline mode is enabled
+        if (AppConfig.isOfflineModeEnabled()) {
+            view.loadUrl("file:///android_asset/offline.html");
+        }
+    }
+
+    // Keep the deprecated method for backward compatibility with older Android versions
+    @Override
     public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
         super.onReceivedError(view, errorCode, description, failingUrl);
         // Load offline HTML file if network error occurs and offline mode is enabled
