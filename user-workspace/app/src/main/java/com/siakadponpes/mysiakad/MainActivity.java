@@ -35,47 +35,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+import com.google.android.material.snackbar.Snackbar;
 import com.siakadponpes.mysiakad.config.AppConfig;
+import com.siakadponpes.mysiakad.utils.AdManager;
 
-/**
- * MainActivity handles:
- * 1. Camera and File Upload
- *    - Camera capture through WebChromeClient
- *    - File chooser implementation
- *    - Camera permission handling
- * 
- * 2. Download Support
- *    - Regular file downloads
- *    - Blob URL handling
- *    - PDF file support
- *    - Download progress notifications
- * 
- * 3. Permission Handling
- *    - Camera permissions
- *    - Storage permissions
- *    - Location permissions
- *    - Runtime permission requests
- * 
- * 4. Network Features
- *    - Network state monitoring
- *    - Offline page handling
- *    - Auto-reload when online
- * 
- * 5. Swipe Refresh
- *    - Pull to refresh
- *    - Only works at page top
- *    - Progress indicator
- * 
- * 6. URL Handling
- *    - External URLs
- *    - tel: links
- *    - mailto: links
- *    - WhatsApp links
- *    - Maps links
- */
 public class MainActivity extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener {
-    
-    private static final int PERMISSION_REQUEST_CODE = 1;
     
     private SwipeRefreshLayout swipeRefreshLayout;
     private WebView webView;
@@ -83,221 +47,207 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     private ValueCallback<Uri[]> filePathCallback;
     private long backPressedTime;
     private ConnectivityManager.NetworkCallback networkCallback;
-    private String[] permissions;
-
-    public void setFilePathCallback(ValueCallback<Uri[]> callback) {
-        filePathCallback = callback;
-    }
-
-    public void updateProgressBar(int progress) {
-        if (progressBar != null) {
-            if (progress == 100) {
-                progressBar.setVisibility(View.GONE);
-            } else {
-                progressBar.setVisibility(View.VISIBLE);
-                progressBar.setProgress(progress);
-            }
-        }
-    }
-
-    @Override
-    public void onRefresh() {
-        if (webView != null) {
-            webView.reload();
-        }
-        swipeRefreshLayout.setRefreshing(false);
-    }
-
-    private void initializePermissions() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            permissions = new String[]{
-                Manifest.permission.READ_MEDIA_IMAGES,
-                Manifest.permission.READ_MEDIA_VIDEO,
-                Manifest.permission.READ_MEDIA_AUDIO,
-                Manifest.permission.CAMERA,
-                Manifest.permission.RECORD_AUDIO,
-                Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            };
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            permissions = new String[]{
-                Manifest.permission.READ_EXTERNAL_STORAGE,
-                Manifest.permission.CAMERA,
-                Manifest.permission.RECORD_AUDIO,
-                Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            };
-        } else {
-            permissions = new String[]{
-                Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                Manifest.permission.READ_EXTERNAL_STORAGE,
-                Manifest.permission.CAMERA,
-                Manifest.permission.RECORD_AUDIO,
-                Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            };
-        }
-    }
+    private AdManager adManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Initialize permissions
-        initializePermissions();
+        // Initialize views
+        initializeViews();
+        
+        // Setup WebView
+        setupWebView();
+        
+        // Setup download listener
+        setupDownloadListener();
+        
+        // Register network callback
+        registerNetworkCallback();
+        
+        // Initialize AdMob
+        adManager = AdManager.getInstance();
+        
+        // Request permissions
+        requestPermissions();
 
-        // Initialize Views
+        // Handle notification URL if opened from notification
+        handleNotificationUrl(getIntent());
+    }
+
+    private void initializeViews() {
         webView = findViewById(R.id.webView);
         progressBar = findViewById(R.id.progressBar);
         swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
         
-        // Setup SwipeRefreshLayout
         swipeRefreshLayout.setOnRefreshListener(this);
         swipeRefreshLayout.setColorSchemeResources(
             R.color.colorPrimary,
             R.color.colorAccent
         );
         
-        // Only enable refresh when page is at top
         webView.setOnScrollChangeListener((v, scrollX, scrollY, oldScrollX, oldScrollY) -> {
             swipeRefreshLayout.setEnabled(scrollY == 0);
         });
-        
-        // Setup WebView
-        setupWebView();
-        
-        // Setup download listener and JavaScript interface
-        setupDownloadListener();
-        webView.addJavascriptInterface(this, "Android");
-        
-        // Register network callback
-        registerNetworkCallback();
-        
-        // Request permissions
-        requestPermissions();
+
+        // Setup share button
+        findViewById(R.id.shareButton).setOnClickListener(v -> shareCurrentPage());
+    }
+
+    private void shareCurrentPage() {
+        String url = webView.getUrl();
+        if (url != null && !url.isEmpty()) {
+            Intent shareIntent = new Intent(Intent.ACTION_SEND);
+            shareIntent.setType("text/plain");
+            shareIntent.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.app_name));
+            shareIntent.putExtra(Intent.EXTRA_TEXT, getString(R.string.share_message, url));
+            
+            startActivity(Intent.createChooser(shareIntent, getString(R.string.share_title)));
+        }
     }
 
     private void setupWebView() {
         WebSettings webSettings = webView.getSettings();
         
-        // Enable JavaScript if enabled
+        // Enable JavaScript
         webSettings.setJavaScriptEnabled(AppConfig.isJavaScriptEnabled());
         
+        // Enable WebGL
+        if (AppConfig.isWebGLEnabled()) {
+            webSettings.setJavaScriptEnabled(true);
+            webSettings.setAllowContentAccess(true);
+            webSettings.setAllowFileAccess(true);
+            webSettings.setDomStorageEnabled(true);
+            webSettings.setDatabaseEnabled(true);
+            webSettings.setMediaPlaybackRequiresUserGesture(false);
+            
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                webSettings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
+            }
+        }
+        
         // Enable Geolocation
-        webSettings.setGeolocationEnabled(true);
-        
-        // Enable JavaScript Interface
-        webView.addJavascriptInterface(this, "Android");
-        
-        // Enable DOM Storage
-        webSettings.setDomStorageEnabled(true);
-        
-        // Enable Database
-        webSettings.setDatabaseEnabled(true);
-        
-        // Set Cache Mode
-        webSettings.setCacheMode(WebSettings.LOAD_DEFAULT);
-        
-        // Enable Zoom
-        webSettings.setSupportZoom(true);
-        webSettings.setBuiltInZoomControls(true);
-        webSettings.setDisplayZoomControls(false);
-        
-        // Enable Mixed Content
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            webSettings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
+        if (AppConfig.isLocationEnabled()) {
+            webSettings.setGeolocationEnabled(true);
+            webSettings.setGeolocationDatabasePath(getFilesDir().getPath());
         }
         
-        // Enable Third Party Cookies
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            CookieManager.getInstance().setAcceptThirdPartyCookies(webView, true);
+        // Enable Cookies
+        if (AppConfig.isCookiesEnabled()) {
+            CookieManager.getInstance().setAcceptCookie(true);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                CookieManager.getInstance().setAcceptThirdPartyCookies(webView, true);
+            }
         }
         
-        // Set WebViewClient
+        // Enable Cache
+        if (AppConfig.isCacheEnabled()) {
+            webSettings.setAppCacheEnabled(true);
+            webSettings.setAppCachePath(getApplicationContext().getCacheDir().getPath());
+            webSettings.setCacheMode(WebSettings.LOAD_DEFAULT);
+            webSettings.setDatabaseEnabled(true);
+            webSettings.setDomStorageEnabled(true);
+        }
+        
+        // Set WebViewClient and WebChromeClient
         webView.setWebViewClient(new CustomWebViewClient(this, swipeRefreshLayout));
-        
-        // Set WebChromeClient if fullscreen is enabled
-        if (AppConfig.isFullscreenEnabled()) {
-            webView.setWebChromeClient(new CustomWebChromeClient(this));
-        }
-        
-        // Setup download listener
-        setupDownloadListener();
+        webView.setWebChromeClient(new CustomWebChromeClient(this));
         
         // Load initial URL
-        String baseUrl = AppConfig.getBaseUrl();
-        if (baseUrl != null && !baseUrl.isEmpty()) {
-            webView.loadUrl(baseUrl);
+        String url = getIntent().getStringExtra("notification_url");
+        if (url != null && !url.isEmpty()) {
+            webView.loadUrl(url);
+        } else {
+            webView.loadUrl(AppConfig.getBaseUrl());
         }
     }
 
     private void setupDownloadListener() {
         webView.setDownloadListener((url, userAgent, contentDisposition, mimetype, contentLength) -> {
-            // Handle blob URLs
             if (url.startsWith("blob:")) {
-                // Inject JavaScript to convert blob to base64
-                webView.evaluateJavascript(
-                    "(function() {" +
-                    "    var xhr = new XMLHttpRequest();" +
-                    "    xhr.open('GET', '" + url + "', true);" +
-                    "    xhr.responseType = 'blob';" +
-                    "    xhr.onload = function(e) {" +
-                    "        if (this.status == 200) {" +
-                    "            var blob = this.response;" +
-                    "            var reader = new FileReader();" +
-                    "            reader.readAsDataURL(blob);" +
-                    "            reader.onloadend = function() {" +
-                    "                Android.processBase64Download(reader.result, '" + 
-                                    mimetype + "', '" + contentDisposition + "');" +
-                    "            }" +
-                    "        }" +
-                    "    };" +
-                    "    xhr.send();" +
-                    "})();",
-                    null
-                );
+                handleBlobDownload(url, mimetype, contentDisposition);
                 return;
             }
 
-            // Check storage permission
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) 
                     != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(this, 
                     new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 
-                    PERMISSION_REQUEST_CODE);
+                    Constants.STORAGE_PERMISSION_REQUEST_CODE);
                 return;
             }
             
-            // Get filename from URL or content disposition
             String fileName = URLUtil.guessFileName(url, contentDisposition, mimetype);
             
-            // Create download request
             DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
             request.setMimeType(mimetype);
             request.setTitle(fileName);
             request.setDescription(getString(R.string.downloading_file));
             request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-            request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName);
+            request.setDestinationInExternalPublicDir(
+                Environment.DIRECTORY_DOWNLOADS, 
+                AppConfig.getDownloadDirectory() + File.separator + fileName
+            );
             request.addRequestHeader("User-Agent", userAgent);
             
-            // Get download service and enqueue the request
             DownloadManager dm = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
             if (dm != null) {
                 try {
                     dm.enqueue(request);
-                    Toast.makeText(this, getString(R.string.download_started, fileName), 
-                        Toast.LENGTH_SHORT).show();
+                    showMessage(getString(R.string.download_started, fileName));
                 } catch (Exception e) {
-                    Toast.makeText(this, getString(R.string.download_error), 
-                        Toast.LENGTH_SHORT).show();
+                    showMessage(getString(R.string.download_error));
                 }
             }
         });
     }
 
+    private void handleBlobDownload(String url, String mimetype, String contentDisposition) {
+        webView.evaluateJavascript(
+            "(function() {" +
+            "    var xhr = new XMLHttpRequest();" +
+            "    xhr.open('GET', '" + url + "', true);" +
+            "    xhr.responseType = 'blob';" +
+            "    xhr.onload = function(e) {" +
+            "        if (this.status == 200) {" +
+            "            var blob = this.response;" +
+            "            var reader = new FileReader();" +
+            "            reader.readAsDataURL(blob);" +
+            "            reader.onloadend = function() {" +
+            "                Android.processBase64Download(reader.result, '" + 
+                            mimetype + "', '" + contentDisposition + "');" +
+            "            }" +
+            "        }" +
+            "    };" +
+            "    xhr.send();" +
+            "})();",
+            null
+        );
+    }
+
+    @JavascriptInterface
+    public void processBase64Download(String base64, String mimeType, String contentDisposition) {
+        String fileName = URLUtil.guessFileName("file", contentDisposition, mimeType);
+        String dataString = base64.split(",")[1];
+        byte[] data = android.util.Base64.decode(dataString, android.util.Base64.DEFAULT);
+        
+        File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+        File file = new File(path, AppConfig.getDownloadDirectory() + File.separator + fileName);
+        
+        try {
+            FileOutputStream os = new FileOutputStream(file);
+            os.write(data);
+            os.close();
+            showMessage(getString(R.string.download_complete));
+        } catch (Exception e) {
+            showMessage(getString(R.string.download_error));
+        }
+    }
+
     private void registerNetworkCallback() {
-        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        ConnectivityManager connectivityManager = 
+            (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             networkCallback = new ConnectivityManager.NetworkCallback() {
@@ -334,61 +284,58 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         }
     }
 
-    private void requestPermissions() {
-        if (permissions == null || permissions.length == 0) {
-            return;
+    private void handleNotificationUrl(Intent intent) {
+        String url = intent.getStringExtra("notification_url");
+        if (url != null && !url.isEmpty()) {
+            webView.loadUrl(url);
         }
+    }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            List<String> permissionsToRequest = new ArrayList<>();
-            List<String> permissionsToExplain = new ArrayList<>();
+    @Override
+    public void onRefresh() {
+        webView.reload();
+        swipeRefreshLayout.setRefreshing(false);
+    }
 
-            for (String permission : permissions) {
-                if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
-                    permissionsToRequest.add(permission);
-                    if (ActivityCompat.shouldShowRequestPermissionRationale(this, permission)) {
-                        permissionsToExplain.add(permission);
-                    }
-                }
-            }
-
-            if (!permissionsToRequest.isEmpty()) {
-                if (!permissionsToExplain.isEmpty()) {
-                    String message = getString(R.string.permission_message) + "\n\n";
-                    for (String permission : permissionsToExplain) {
-                        if (permission.equals(Manifest.permission.CAMERA)) {
-                            message += "• " + getString(R.string.permission_camera_reason) + "\n";
-                        } else if (permission.equals(Manifest.permission.RECORD_AUDIO)) {
-                            message += "• " + getString(R.string.permission_microphone_reason) + "\n";
-                        } else if (permission.equals(Manifest.permission.ACCESS_FINE_LOCATION)) {
-                            message += "• " + getString(R.string.permission_location_reason) + "\n";
-                        } else if (permission.contains("STORAGE") || permission.contains("MEDIA")) {
-                            message += "• " + getString(R.string.permission_storage_reason) + "\n";
-                        }
-                    }
-
-                    new androidx.appcompat.app.AlertDialog.Builder(this)
-                        .setTitle(R.string.permission_title)
-                        .setMessage(message.trim())
-                        .setPositiveButton(R.string.permission_ok, (dialog, which) -> {
-                            ActivityCompat.requestPermissions(this, 
-                                permissionsToRequest.toArray(new String[0]), 
-                                PERMISSION_REQUEST_CODE);
-                        })
-                        .setNegativeButton(R.string.permission_cancel, (dialog, which) -> {
-                            dialog.dismiss();
-                            Toast.makeText(this, R.string.permission_denied_message, 
-                                Toast.LENGTH_LONG).show();
-                        })
-                        .create()
-                        .show();
-                } else {
-                    ActivityCompat.requestPermissions(this, 
-                        permissionsToRequest.toArray(new String[0]), 
-                        PERMISSION_REQUEST_CODE);
-                }
+    @Override
+    public void onBackPressed() {
+        if (webView.canGoBack()) {
+            webView.goBack();
+        } else {
+            if (System.currentTimeMillis() - backPressedTime < Constants.BACK_PRESS_INTERVAL) {
+                super.onBackPressed();
+            } else {
+                backPressedTime = System.currentTimeMillis();
+                showMessage(getString(R.string.exit_message));
             }
         }
+    }
+
+    private void showMessage(String message) {
+        Snackbar.make(webView, message, Snackbar.LENGTH_SHORT).show();
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        handleNotificationUrl(intent);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        webView.onResume();
+        
+        // Load interstitial ad
+        if (AppConfig.isAdMobEnabled()) {
+            adManager.loadInterstitialAd(this);
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        webView.onPause();
+        super.onPause();
     }
 
     @Override
@@ -401,6 +348,48 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
                 (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
             connectivityManager.unregisterNetworkCallback(networkCallback);
         }
+        if (adManager != null) {
+            adManager.destroy();
+        }
         super.onDestroy();
+    }
+
+    public void setFilePathCallback(ValueCallback<Uri[]> callback) {
+        filePathCallback = callback;
+    }
+
+    public void updateProgressBar(int progress) {
+        if (progressBar != null) {
+            if (progress == 100) {
+                progressBar.setVisibility(View.GONE);
+            } else {
+                progressBar.setVisibility(View.VISIBLE);
+                progressBar.setProgress(progress);
+            }
+        }
+    }
+
+    private void requestPermissions() {
+        String[] permissions = {
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.CAMERA,
+            Manifest.permission.RECORD_AUDIO,
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        };
+
+        List<String> permissionsToRequest = new ArrayList<>();
+        for (String permission : permissions) {
+            if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
+                permissionsToRequest.add(permission);
+            }
+        }
+
+        if (!permissionsToRequest.isEmpty()) {
+            ActivityCompat.requestPermissions(this, 
+                permissionsToRequest.toArray(new String[0]), 
+                Constants.PERMISSION_REQUEST_CODE);
+        }
     }
 }
